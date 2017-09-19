@@ -1,11 +1,8 @@
 """Utility file to seed ratings database from MovieLens data in seed_data/"""
 
 from sqlalchemy import func
-from model import User, Rating, Movie
-# from model import Rating
-# from model import Movie
-
-from model import connect_to_db, db
+from model import User, Rating, Movie, connect_to_db, db
+from datetime import datetime
 from server import app
 
 
@@ -37,24 +34,22 @@ def load_users():
 
 def load_movies():
     """Load movies from u.item into database."""
-    print 'movies'
-    test = db.session
 
+    print 'Movies'
     Movie.query.delete()
 
     for row in open("seed_data/u.item"):
         row = row.rstrip()
         clean = row.split("|")
         if clean[1] == "unknown":
-            del clean
-        elif clean[1] in test:
-            db.session.delete(movie) # how do we access the session raaawrgh
+            next
         else:
+            date = datetime.strptime(clean[2], '%d-%b-%Y').date()
             movie = Movie(movie_id=clean[0],
                           title=clean[1][:-7],
-                          released_at=clean[2],
-                          imdb_url=clean[4][:80])
-            #how do we deal with duplicate and unknown entries?
+                          released_at=date,
+                          imdb_url=clean[4])
+            #how do we get rid of the HH:MM from the timestamp?
         db.session.add(movie)
 
     db.session.commit()
@@ -62,7 +57,22 @@ def load_movies():
 def load_ratings():
     """Load ratings from u.data into database."""
 
-    pass
+    print "Ratings"
+
+    Rating.query.delete()
+
+    for row in open("seed_data/u.data"):
+        print row
+        user_id, movie_id, score, timestamp = row.split()
+
+        rating = Rating(user_id=user_id,
+                        movie_id=movie_id,
+                        score=score)
+
+        db.session.add(rating)
+
+    db.session.commit()
+
 def set_val_user_id():
     """Set value for the next user_id after seeding database"""
 
@@ -85,5 +95,5 @@ if __name__ == "__main__":
     # Import different types of data
     load_users()
     load_movies()
- #   load_ratings()
+    load_ratings()
     set_val_user_id()
