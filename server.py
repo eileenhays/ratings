@@ -44,17 +44,62 @@ def show_registration():
 
 @app.route("/user-data", methods=["POST"])
 def new_user():
-    """Input new user into database."""
+    """Register new user and input into database."""
 
     email = request.form.get("email")
     password = request.form.get("password")
 
-    # if db.session.query(User.email).filter_by(User.email=email) != None:
-    #     return "There was already an account registered by this email."
+    if User.query.filter_by(email=email).first() is not None:
+        return "There was already an account registered by this email."
 
     user = User(email=email, password=password)
     db.session.add(user)
     db.session.commit()
+
+    return redirect("/")
+
+
+@app.route("/log-in")
+def show_login():
+    """Shows Log-in form."""
+
+    return render_template("log-in.html")
+
+
+@app.route("/handle-log-in", methods=["POST"])
+def handles_login():
+    """Checks email against password in database and fetches user_id for Flask
+    session.
+    """
+
+    curr_email = request.form.get("email")
+    curr_password = request.form.get("password")
+
+    db_user = User.query.filter_by(email=curr_email).first()
+    db_password = db_user.password
+    db_user_id = db_user.user_id
+
+    if db_user is not None and curr_password == db_password:
+        session['user_id'] = db_user_id
+        flash("Successfully logged in!")
+        print session
+        return redirect("/")
+    else:
+        flash("Wrong password!")
+        return redirect("/log-in")
+
+
+@app.route("/log-out")
+def handles_logout():
+    """Logs user out."""
+
+    if session:
+        del session['user_id']
+        flash("Logged out!")
+    else:
+        flash("You have to log in first.")
+
+    return redirect("/")
 
 
 if __name__ == "__main__":
