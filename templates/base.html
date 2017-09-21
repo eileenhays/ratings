@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+    <title>Ratings</title>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          {{ message }}
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+</head>
+
+<body>
+    Ratings
+    <hr>
+
+    {% block content %} put you content here {% endblock %}
+
+
+</body>
+
+</html>

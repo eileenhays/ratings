@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <h2>{{ movie.title }} Details</h2>
+    <p>Release Date: {{ movie.released_at }}</p>
+    <p><a href="{{ movie.imdb_url }}">IMDB link</a></p>
+    <p>Add your rating for this movie</p>
+    <form action="/process-rating" id="process-rating" method="GET">
+        Rating (1 - 5): <input type="number" name="rating"></input>
+        <input type="hidden" name="movie_id" value={{ movie.movie_id }}>
+        <input type="submit"></input>
+
+    </form>
+
+    <p>Ratings for this movie: </p>
+    <ul>
+        {% for rating in movie.ratings %}
+            <li>
+                {{ rating.score }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

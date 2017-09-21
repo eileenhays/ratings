@@ -47,8 +47,6 @@ def load_user_details(user_id):
 
     user = User.query.filter_by(user_id=user_id).one()
 
-    # user_ratings = Rating.query.filter(Rating.user_id == user_id).all()
-
     return render_template("user_details.html", user=user)
 
 @app.route("/movies")
@@ -74,18 +72,32 @@ def load_movie_details(movie_id):
 
     return render_template("movie_details.html", movie=movie)
 
+
 @app.route("/process-rating")
 def process_rating():
 
-    rating = request.form.args("rating")
+    score = request.args.get("rating")
+    movie_id = request.args.get("movie_id")
 
-    if rating > 5 or rating < 1:
+    user_id = session["user_id"]
+    user = User.query.get(user_id)
+
+    rating = Rating.query.filter_by(user_id=user_id, movie_id=movie_id).first()
+
+    if int(score) > 5 or int(score) < 1: #invalid input
         flash("Choose a number between 1 and 5.")
-        return redirect("/movies/<movie_id>")
+    elif rating: #update existing rating
+        flash("You've already rated this movie. This will update your current rating.")
+        rating.score = score
+        db.session.commit()
+    else: #add a new rating
+        rating = Rating(movie_id=movie_id, user_id=user_id, score=score)
 
-    # needs to handle both new and existing ratings
-    # I assume updating existing ratings is like updating dict keys?
+        db.session.add(rating)
+        db.session.commit()
+        flash("Score was successfully added!")
 
+    return redirect("/movies/" + movie_id)
 
 @app.route("/registration")
 def show_registration():
