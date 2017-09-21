@@ -35,6 +35,58 @@ def user_list():
     return render_template("user_list.html", users=users)
 
 
+@app.route("/users/<user_id>")
+def load_user_details(user_id):
+    """Returning details for specific user:
+
+        Email
+        Age
+        Zipcode
+        Movies rated
+    """
+
+    user = User.query.filter_by(user_id=user_id).one()
+
+    # user_ratings = Rating.query.filter(Rating.user_id == user_id).all()
+
+    return render_template("user_details.html", user=user)
+
+@app.route("/movies")
+def movie_list():
+    """Show list of movies."""
+
+    movies = Movie.query.order_by(Movie.title).all()
+    return render_template("movie_list.html", movies=movies)
+
+
+@app.route("/movies/<movie_id>")
+def load_movie_details(movie_id):
+    """Returning details for specific movie:
+
+        Movie title
+        Release Date
+        IMDB url
+        Movie Ratings
+
+    """
+
+    movie = Movie.query.filter_by(movie_id=movie_id).one()
+
+    return render_template("movie_details.html", movie=movie)
+
+@app.route("/process-rating")
+def process_rating():
+
+    rating = request.form.args("rating")
+
+    if rating > 5 or rating < 1:
+        flash("Choose a number between 1 and 5.")
+        return redirect("/movies/<movie_id>")
+
+    # needs to handle both new and existing ratings
+    # I assume updating existing ratings is like updating dict keys?
+
+
 @app.route("/registration")
 def show_registration():
     """Shows registration form."""
@@ -83,7 +135,7 @@ def handles_login():
         session['user_id'] = db_user_id
         flash("Successfully logged in!")
         print session
-        return redirect("/")
+        return redirect("/users/" + str(db_user_id))
     else:
         flash("Wrong password!")
         return redirect("/log-in")
